@@ -1,0 +1,162 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Annoy Roommates</title>
+</head>
+
+<body>
+    <h1>Annoy Roommates</h1>
+
+    <h2>Password</h2>
+
+    <input type="password" id="password" />
+
+    <h2>Send Audio File</h2>
+
+    <input type="file" id="file" accept="audio/webm, audio/mpeg, audio/wav" />
+    <button id="bfile">Submit</button>
+
+    <!-- Won't work without secure context
+
+    <h2>Send Voice</h2>
+
+    <button id="bvoice_start">Start</button>
+    <button id="bvoice_end">End</button>
+    -->
+
+    <h2>Send TTS</h2>
+
+    <textarea id="tts"> </textarea>
+    <button id="btts">Submit</button>
+
+    <script>
+        const passwordInput = document.getElementById("password");
+        const audioInput = document.getElementById("file");
+        const ttsInput = document.getElementById("tts");
+
+        // This will be substituted by back end
+        let url /*URL*/;
+
+        document.getElementById("bfile").onclick = async () => {
+            if (audioInput.files && audioInput.files[0]) {
+                const file = audioInput.files[0];
+                const reader = new FileReader();
+
+                reader.onload = function (e) {
+                    const base64String = e.target.result.split(",")[1];
+                    let ext = "err";
+
+                    switch (file.type) {
+                        case "audio/webm":
+                            ext = "webm";
+                            break;
+                        case "audio/mpeg":
+                            ext = "mp3";
+                            break;
+                        case "audio/wav":
+                            ext = "wav";
+                            break;
+                    }
+
+                    fetch(`http://${url}/play`, {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            password: passwordInput.value,
+                            data: base64String,
+                            ext: ext,
+                        }),
+                    });
+                };
+
+                reader.onerror = function (error) {
+                    alert("Upload error");
+                };
+
+                reader.readAsDataURL(file);
+            } else {
+                console.error("No file selected.");
+            }
+        };
+
+        document.getElementById("btts").onclick = async () => {
+            fetch(`http://${url}/tts`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    password: passwordInput.value,
+                    data: ttsInput.value,
+                }),
+            });
+        };
+
+        let mediaRecorder;
+        let audioChunks = [];
+
+        const voiceStart = document.getElementById("bvoice_start");
+        const voiceEnd = document.getElementById("bvoice_end");
+
+        voiceStart.onclick = async () => {
+            if (mediaRecorder) {
+                alert("Already Started");
+                return;
+            }
+
+            let stream;
+            try {
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: true,
+                });
+            } catch {
+                alert("Could not get permissions");
+            }
+            mediaRecorder = new MediaRecorder(stream);
+
+            mediaRecorder.ondataavailable = (event) => {
+                audioChunks.push(event.data);
+            };
+
+            mediaRecorder.onstop = async () => {
+                const audioBlob = new Blob(audioChunks, {type: "audio/webm"});
+                audioChunks = [];
+                const arrayBuffer = await audioBlob.arrayBuffer();
+                const base64Audio = btoa(
+                    String.fromCharCode(...new Uint8Array(arrayBuffer)),
+                );
+
+                fetch(`http://${url}/play`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        password: passwordInput.value,
+                        data: base64Audio,
+                        ext: "webm",
+                    }),
+                });
+            };
+
+            mediaRecorder.start();
+        };
+
+        voiceEnd.onclick = async () => {
+            if (!mediaRecorder) {
+                alert("Not Already Started");
+                return;
+            }
+
+            mediaRecorder.stop();
+            mediaRecorder = null;
+        };
+    </script>
+</body>
+
+</html>
