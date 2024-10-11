@@ -4,9 +4,9 @@ Here's a messy piece of code I hacked together in a couple hours to annoy my roo
 
 If you are like me, and you self host on a server laptop under your desk, you can use this to: 
 
-1. Send obnoxious TTS messages remotely
-2. Send meme sound effects remotely
-3. Send personal voice messages remotely (from mobile devices)
+1. Play obnoxious TTS messages remotely
+2. Play meme sound effects remotely
+3. Play personal voice messages remotely (from mobile devices)
 
 ## Usage
 
