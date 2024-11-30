@@ -19,8 +19,9 @@ pub struct OurState {
 pub async fn main() {
     tracing_subscriber::fmt::init();
 
-    let url = env::args().nth(1).unwrap();
-    let password = env::args().nth(2).unwrap();
+    let bind_url = env::args().nth(1).unwrap();
+    let public_url = env::args().nth(2).unwrap();
+    let password = env::args().nth(3).unwrap();
 
     let state = Arc::new(OurState { password });
 
@@ -33,17 +34,17 @@ pub async fn main() {
         .layer(TraceLayer::new_for_http())
         .with_state(Arc::clone(&state));
 
-    let listener = tokio::net::TcpListener::bind(&url).await.unwrap();
-    eprintln!("Listening at {}", &url);
+    let listener = tokio::net::TcpListener::bind(&bind_url).await.unwrap();
+    eprintln!("Listening at {}", &bind_url);
     axum::serve(listener, app).await.unwrap();
 }
 
 async fn get_root() -> Html<String> {
     let html = include_str!("../index.html");
 
-    let url = env::args().nth(1).unwrap();
+    let public_url = env::args().nth(2).unwrap();
 
-    let html = html.replace("/*URL*/", &format!(" = \"{}\"", url));
+    let html = html.replace("/*URL*/", &format!(" = \"{}\"", public_url));
     Html(html)
 }
 
