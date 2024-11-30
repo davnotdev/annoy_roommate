@@ -37,8 +37,7 @@
         const audioInput = document.getElementById("file");
         const ttsInput = document.getElementById("tts");
 
-        // This will be substituted by back end
-        let url /*URL*/;
+        let url = window.location.href;
 
         document.getElementById("bfile").onclick = async () => {
             if (audioInput.files && audioInput.files[0]) {
@@ -61,7 +60,7 @@
                             break;
                     }
 
-                    fetch(`http://${url}/play`, {
+                    fetch(`${url}play`, {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
@@ -85,7 +84,7 @@
         };
 
         document.getElementById("btts").onclick = async () => {
-            fetch(`http://${url}/tts`, {
+            fetch(`${url}tts`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -131,7 +130,7 @@
                     String.fromCharCode(...new Uint8Array(arrayBuffer)),
                 );
 
-                fetch(`http://${url}/play`, {
+                fetch(`${url}play`, {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",

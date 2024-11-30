@@ -20,8 +20,7 @@ pub async fn main() {
     tracing_subscriber::fmt::init();
 
     let bind_url = env::args().nth(1).unwrap();
-    let public_url = env::args().nth(2).unwrap();
-    let password = env::args().nth(3).unwrap();
+    let password = env::args().nth(2).unwrap();
 
     let state = Arc::new(OurState { password });
 
@@ -40,12 +39,7 @@ pub async fn main() {
 }
 
 async fn get_root() -> Html<String> {
-    let html = include_str!("../index.html");
-
-    let public_url = env::args().nth(2).unwrap();
-
-    let html = html.replace("/*URL*/", &format!(" = \"{}\"", public_url));
-    Html(html)
+    Html(include_str!("../index.html").to_owned())
 }
 
 // Just in case a bug occurs...
